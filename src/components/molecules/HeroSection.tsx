@@ -1,5 +1,5 @@
 import { CalendarSearch, Github, Linkedin, Mail } from "lucide-react";
-import { Button, PixelTransition, TextType } from "@/components/atoms";
+import { Button, TextType } from "@/components/atoms";
 import { cn } from "@/lib/utils";
 
 const summary = [

@@ -1,15 +1,11 @@
-/** biome-ignore-all lint/correctness/useExhaustiveDependencies: biome-ignore lint: false positive */
-/** biome-ignore-all lint/style/noNonNullAssertion: biome-ignore lint: false positive */
-/** biome-ignore-all lint/suspicious/useIterableCallbackReturn: biome-ignore lint: false positive */
-
 import gsap from "gsap";
+import { Flip } from "gsap/Flip";
 import React, {
 	Children,
 	cloneElement,
 	forwardRef,
 	isValidElement,
 	type ReactElement,
-	type ReactNode,
 	type RefObject,
 	useEffect,
 	useMemo,
@@ -30,7 +26,7 @@ export interface PageCarouselProps {
 	onCardClick?: (idx: number) => void;
 	skewAmount?: number;
 	easing?: "linear" | "elastic";
-	children: ReactNode;
+	children: React.ReactNode;
 }
 
 type PageRef = RefObject<HTMLDivElement | null>;
@@ -66,6 +62,8 @@ const placeNow = (el: HTMLElement, slot: Slot, skew: number) =>
 		force3D: true,
 	});
 
+gsap.registerPlugin(Flip);
+
 export const PageCarousel: React.FC<PageCarouselProps> = ({
 	width = 500,
 	height = 400,
@@ -78,7 +76,8 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 	easing = "elastic",
 	children,
 }) => {
-	const config =
+	// Optimization: Memoize config to avoid recalculation
+	const config = useMemo(() => 
 		easing === "elastic"
 			? {
 					ease: "elastic.out(0.6,0.9)",
@@ -95,12 +94,15 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 					durReturn: 0.8,
 					promoteOverlap: 0.45,
 					returnDelay: 0.2,
-				};
+				},
+	[easing]);
 
 	const childArr = useMemo(
 		() => Children.toArray(children) as ReactElement<PageContentProps>[],
 		[children],
 	);
+	
+	// Stable refs array
 	const refs = useMemo<PageRef[]>(
 		() => childArr.map(() => React.createRef<HTMLDivElement>()),
 		[childArr.length],
@@ -115,22 +117,50 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 	const container = useRef<HTMLDivElement>(null);
 
 	const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+    const flipState = useRef<Flip.FlipState | null>(null);
+    
+    // Refs for accessing state inside intervals/events without effect re-runs
+    const expandedIndexRef = useRef(expandedIndex);
+    const isPausedRef = useRef(false);
+    
+    // Keep ref in sync
+    useEffect(() => {
+        expandedIndexRef.current = expandedIndex;
+    }, [expandedIndex]);
 
+    // Cleanup helper
+    const cleanupInterval = () => {
+        if (intervalRef.current) {
+             clearInterval(intervalRef.current);
+             intervalRef.current = 0;
+        }
+    };
+
+    // CORE LOGIC: Initial Placement & Carousel Loop
+    // Only re-runs if core config changes, NOT on expansion/hover
 	useEffect(() => {
 		const total = refs.length;
+        
+        // Initial Place
 		refs.forEach((r, i) =>
+            r.current &&
 			placeNow(
-				r.current!,
+				r.current,
 				makeSlot(i, cardDistance, verticalDistance, total),
 				skewAmount,
 			),
 		);
 
 		const swap = () => {
+             // Check if we should skip swap (expanded or paused explicitly)
+             if (expandedIndexRef.current !== null || isPausedRef.current) return;
+             
 			if (order.current.length < 2) return;
 
 			const [front, ...rest] = order.current;
-			const elFront = refs[front].current!;
+            const elFront = refs[front]?.current;
+            if (!elFront) return;
+
 			const tl = gsap.timeline();
 			tlRef.current = tl;
 
@@ -142,7 +172,9 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 
 			tl.addLabel("promote", `-=${config.durDrop * config.promoteOverlap}`);
 			rest.forEach((idx, i) => {
-				const el = refs[idx].current!;
+				const el = refs[idx].current;
+                if (!el) return;
+                
 				const slot = makeSlot(i, cardDistance, verticalDistance, refs.length);
 				tl.set(el, { zIndex: slot.zIndex }, "promote");
 				tl.to(
@@ -189,65 +221,148 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 			});
 		};
 
-		// Don't auto-swap if expanded
-		if (expandedIndex === null) {
-			swap();
-			intervalRef.current = window.setInterval(swap, delay);
-		}
-
-		if (pauseOnHover || expandedIndex !== null) {
-			const node = container.current!;
-			const pause = () => {
-				tlRef.current?.pause();
-				clearInterval(intervalRef.current);
-			};
-			const resume = () => {
-				if (expandedIndex !== null) return; // Keep paused if expanded
-				tlRef.current?.play();
-				intervalRef.current = window.setInterval(swap, delay);
-			};
-
-			// If expanded, pause immediately
-			if (expandedIndex !== null) {
-				pause();
-			}
-
-			node.addEventListener("mouseenter", pause);
-			node.addEventListener("mouseleave", resume);
-			return () => {
-				node.removeEventListener("mouseenter", pause);
-				node.removeEventListener("mouseleave", resume);
-				clearInterval(intervalRef.current);
-			};
-		}
-		return () => clearInterval(intervalRef.current);
+        // Start Loop
+        cleanupInterval();
+		intervalRef.current = window.setInterval(swap, delay);
+		
+		return () => {
+            cleanupInterval();
+            tlRef.current?.kill();
+        };
 	}, [
 		cardDistance,
 		verticalDistance,
 		delay,
-		pauseOnHover,
 		skewAmount,
-		easing,
-		expandedIndex,
+        config, // dependency on stable config
+        // Removed: expandedIndex, pauseOnHover (handled via refs/separate effect)
 	]);
+
+    // EVENT LOGIC: Pause on Hover
+    // Separated to prevent restarting the interval loop on hover
+    useEffect(() => {
+        if (!pauseOnHover) return;
+        
+        const node = container.current;
+        if (!node) return;
+
+        const handleMouseEnter = () => {
+            isPausedRef.current = true;
+            tlRef.current?.pause();
+        };
+
+        const handleMouseLeave = () => {
+			// Always clear pause flag when mouse leaves
+            isPausedRef.current = false;
+			
+            // Only resume timeline if not expanded (if expanded, it stays paused until closed)
+            if (expandedIndexRef.current === null) {
+                tlRef.current?.play();
+            }
+        };
+
+        node.addEventListener("mouseenter", handleMouseEnter);
+        node.addEventListener("mouseleave", handleMouseLeave);
+        
+        return () => {
+            node.removeEventListener("mouseenter", handleMouseEnter);
+            node.removeEventListener("mouseleave", handleMouseLeave);
+        };
+    }, [pauseOnHover]);
+    
+    // Pause immediately if expanded changes
+    useEffect(() => {
+        if (expandedIndex !== null) {
+            // Expanded: Pause everything
+             tlRef.current?.pause();
+             // We don't clear interval, the swap function checks the ref
+        } else {
+            // Closed: Resume if not hovered (or if we don't care about hover)
+            // But wait, if we are hovered and just closed, we should stay paused?
+            // Simple logic: If we just closed, try to resume. The swapping logic checks isPausedRef.
+            // But we need to un-pause the timeline if it was paused.
+            if (!isPausedRef.current) {
+                tlRef.current?.play();
+            }
+        }
+    }, [expandedIndex]);
+
+    // Flip Animation Effect
+    React.useLayoutEffect(() => {
+        if (!flipState.current) return;
+
+        // Expanding
+        if (expandedIndex !== null) {
+            Flip.from(flipState.current, {
+                targets: ".page-content-expanded",
+                duration: 0.4, // Faster
+                ease: "power3.inOut",
+                absolute: true,
+                zIndex: 50,
+            });
+        } 
+        // Closing
+        else {
+             Flip.from(flipState.current, {
+                targets: refs.map(r => r.current), // Target all cards, Flip will match IDs
+                duration: 0.4, // Faster
+                ease: "power3.inOut",
+                absolute: true, // Important for the transition
+                zIndex: 50,
+                onComplete: () => {
+                     flipState.current = null;
+                     
+                     // Force re-layout/skew of all cards to Ensure 3D context is restored
+                     // MUST respect the current visual order (order.current)
+                     const total = refs.length;
+                     const currentOrder = order.current;
+                     
+                     refs.forEach((r, i) => {
+                        if (r.current) {
+                            // Find which slot this card occupies visually
+                            const visualIndex = currentOrder.indexOf(i);
+                            
+                            if (visualIndex !== -1) {
+                                // Clear any Flip transform residue first
+                                gsap.set(r.current, { clearProps: "transform" });
+                                placeNow(
+                                    r.current,
+                                    makeSlot(visualIndex, cardDistance, verticalDistance, total),
+                                    skewAmount,
+                                );
+                            }
+                        }
+                     });
+                }
+            });
+        }
+    }, [expandedIndex, cardDistance, verticalDistance, skewAmount]);
+
 
 	const rendered = childArr.map((child, i) =>
 		isValidElement<PageContentProps>(child)
-			? cloneElement(child, {
+			? cloneElement(child as React.ReactElement<any>, {
 					key: i,
 					ref: refs[i],
+                    "data-flip-id": `card-${i}`, 
 					style: {
 						width,
 						height,
 						...(child.props.style ?? {}),
-						opacity: expandedIndex === i ? 0 : 1, // Hide original if expanded
+						opacity: expandedIndex === i ? 0 : 1, 
+                        visibility: expandedIndex === i ? 'hidden' : 'visible',
 					},
 					onClick: (e: React.MouseEvent<HTMLDivElement>) => {
+                        const cardEl = refs[i].current;
+                        if (cardEl) {
+                             flipState.current = Flip.getState(cardEl);
+                        }
+
 						child.props.onClick?.(e);
 						onCardClick?.(i);
 						setExpandedIndex(i);
 					},
-				} as PageContentProps & React.RefAttributes<HTMLDivElement>)
+				})
 			: child,
 	);
 
@@ -264,16 +379,25 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 				createPortal(
 					<div
 						className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
-						onClick={() => setExpandedIndex(null)}
+						onClick={() => {
+                            // Capture the EXPANDED card state before closing
+                            const expandedEl = document.querySelector(".page-content-expanded");
+                            if (expandedEl) {
+                                flipState.current = Flip.getState(expandedEl);
+                            }
+                            setExpandedIndex(null)
+                        }}
 					>
 						<div
-							className="relative w-[calc(100vw_-_80px)] h-[calc(100vh_-_80px)] overflow-auto" // Container for the expanded card
+							className="relative w-[calc(100vw_-_80px)] h-[calc(100vh_-_80px)] overflow-auto dark" // Container for the expanded card
 							onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
 						>
 							{/* Render a clone of the expanded child without transforms */}
 							{isValidElement<PageContentProps>(childArr[expandedIndex]) &&
-								cloneElement(childArr[expandedIndex], {
+								cloneElement(childArr[expandedIndex] as React.ReactElement<any>, {
 									...childArr[expandedIndex].props,
+                                    "data-flip-id": `card-${expandedIndex}`, // Move the ID here
+                                    className: cn(childArr[expandedIndex].props.className, "page-content-expanded"), // Helper class for Flip targets selector
 									style: { width: "100%", height: "100%" },
 									expanded: true,
 								})}

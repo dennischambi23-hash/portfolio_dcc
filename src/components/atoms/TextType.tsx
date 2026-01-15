@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useExhaustiveDependencies: library */
 import { gsap } from "gsap";
 import {
 	createElement,

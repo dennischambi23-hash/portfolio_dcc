@@ -32,7 +32,7 @@ function StatItem({ value, label1, label2 }: StatItemProps) {
 	const label = `${label1} ${label2}`.toLowerCase();
 
 	return (
-		<div className="flex flex-col" role="group" aria-label={label}>
+		<div className="flex flex-col">
 			<div
 				ref={numberRef}
 				className="text-6xl font-black text-gray-50"

@@ -1,5 +1,5 @@
-
 import { PageCarousel, PageContent } from "../molecules";
+import { Resume, ResumePreview } from "./Resume";
 
 export function OverviewCarousel() {
 	return (
@@ -9,15 +9,10 @@ export function OverviewCarousel() {
 			delay={5000}
 			pauseOnHover={true}
 		>
-			<PageContent
-				title="Resume"
-				preview={
-					<div>
-						<div className="size-full bg-amber-400">resumen</div>
-					</div>
-				}
-			>
-				<div className="size-full bg-amber-400">resumen</div>
+			<PageContent title="Resume" preview={<ResumePreview />}>
+				<div className="size-full bg-amber-400">
+					<Resume />
+				</div>
 			</PageContent>
 
 			<PageContent

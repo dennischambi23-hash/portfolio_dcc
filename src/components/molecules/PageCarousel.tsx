@@ -430,7 +430,7 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 						}}
 					>
 						<div
-							className="relative w-[calc(100vw-80px)] h-[calc(100vh-80px)] overflow-auto dark" // Container for the expanded card
+							className="relative w-[calc(100vw-80px)] h-[calc(100vh-80px)] overflow-hidden dark" // Container for the expanded card
 							onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
 						>
 							{/* Render a clone of the expanded child without transforms */}
@@ -484,7 +484,9 @@ export function PageContent({
 			id={rest.id || `page-content-${title.toLowerCase().replace(/\s+/g, "-")}`}
 		>
 			<PageHeader title={title} />
-			<div aria-hidden={!expanded}>{expanded ? children : preview}</div>
+			<div aria-hidden={!expanded} className="w-full h-full">
+				{expanded ? children : preview}
+			</div>
 		</article>
 	);
 }

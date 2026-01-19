@@ -438,7 +438,7 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 						aria-labelledby={`page-title-${expandedIndex}`}
 					>
 						<div
-							className="relative md:w-[calc(100vw-80px)] md:h-[calc(100vh-80px)] w-[calc(100vw-20px)] h-[calc(100vh-20px)] overflow-hidden dark" // Container for the expanded card
+							className="relative md:w-[calc(100vw-80px)] md:h-[calc(100dvh-80px)] w-[calc(100vw-20px)] h-[calc(100dvh-20px)] overflow-hidden dark" // Container for the expanded card
 							onClick={(e) => e.stopPropagation()} // Prevent closing when clicking content
 						>
 							{/* Render a clone of the expanded child without transforms */}

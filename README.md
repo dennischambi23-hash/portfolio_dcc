@@ -22,32 +22,24 @@ A modern, interactive portfolio website showcasing my skills, projects, and prof
 ### Core Framework & Build Tools
 - **[React 19.2.0](https://react.dev/)** - Latest React with concurrent features
 - **[TypeScript 5.9.3](https://www.typescriptlang.org/)** - Type-safe JavaScript
-- **[Vite (Rolldown)](https://vite.dev/)** - Next-generation frontend tooling with Rolldown bundler
-- **[React Compiler](https://react.dev/learn/react-compiler)** - Automatic React optimization
 
 ### Styling & UI
 - **[Tailwind CSS 4.1.18](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[Radix UI](https://www.radix-ui.com/)** - Unstyled, accessible UI components
 - **[Lucide React](https://lucide.dev/)** - Beautiful & consistent icon set
-- **[Class Variance Authority](https://cva.style/docs)** - Component variant management
 - **[tw-animate-css](https://www.npmjs.com/package/tw-animate-css)** - Tailwind animation utilities
 
 ### Animation & Interactions
 - **[GSAP 3.14.2](https://gsap.com/)** - Professional-grade animation library
-- **[@gsap/react](https://gsap.com/docs/v3/React/)** - React integration for GSAP
 
 ### Document Handling
 - **[React PDF](https://react-pdf.org/)** - PDF viewer component
-- **[PDF.js](https://mozilla.github.io/pdf.js/)** - PDF rendering engine
 
 ### Development Tools
 - **[Biome](https://biomejs.dev/)** - Fast formatter and linter
 - **[pnpm](https://pnpm.io/)** - Efficient package manager
-- **[vite-plugin-webfont-dl](https://github.com/feat-agency/vite-plugin-webfont-dl)** - Google Fonts optimization
 
 ### Deployment
 - **[GitHub Pages](https://pages.github.com/)** - Static site hosting
-- **[gh-pages](https://www.npmjs.com/package/gh-pages)** - Automated deployment
 
 ## 📁 Project Structure
 

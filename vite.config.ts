@@ -6,6 +6,7 @@ import webfontDownload from "vite-plugin-webfont-dl";
 
 // https://vite.dev/config/
 export default defineConfig({
+	base: "/portfolio_spa",
 	plugins: [
 		react({
 			babel: {

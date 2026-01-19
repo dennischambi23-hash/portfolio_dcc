@@ -1,7 +1,19 @@
+import { lazy, Suspense } from "react";
 import { PageCarousel, PageContent } from "../molecules";
-import { Projects, ProjectsPreview } from "./Projects";
-import { Resume, ResumePreview } from "./Resume";
-import { Skills, SkillsPreview } from "./Skills";
+import { ProjectsPreview } from "./ProjectsPreview";
+import { ResumePreview } from "./ResumePreview";
+import { SkillsPreview } from "./SkillsPreview";
+
+// Lazy load heavy components
+const Resume = lazy(() =>
+	import("./Resume").then((module) => ({ default: module.Resume })),
+);
+const Projects = lazy(() =>
+	import("./Projects").then((module) => ({ default: module.Projects })),
+);
+const Skills = lazy(() =>
+	import("./Skills").then((module) => ({ default: module.Skills })),
+);
 
 export function OverviewCarousel() {
 	return (
@@ -12,15 +24,21 @@ export function OverviewCarousel() {
 			pauseOnHover={true}
 		>
 			<PageContent title="Resume" preview={<ResumePreview />}>
-				<Resume />
+				<Suspense fallback={<ResumePreview />}>
+					<Resume />
+				</Suspense>
 			</PageContent>
 
 			<PageContent title="Projects" preview={<ProjectsPreview />}>
-				<Projects />
+				<Suspense fallback={<ProjectsPreview />}>
+					<Projects />
+				</Suspense>
 			</PageContent>
 
 			<PageContent title="Skills" preview={<SkillsPreview />}>
-				<Skills />
+				<Suspense fallback={<SkillsPreview />}>
+					<Skills />
+				</Suspense>
 			</PageContent>
 		</PageCarousel>
 	);

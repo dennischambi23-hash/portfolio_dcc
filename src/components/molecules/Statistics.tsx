@@ -1,6 +1,7 @@
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 import { useRef } from "react";
+import { stadistics } from "@/constants/profile";
 import { GlassContainer } from "../atoms";
 
 interface StatItemProps {
@@ -59,9 +60,21 @@ export function Statistics() {
 			className="flex flex-col gap-8 -translate-y-1/2"
 			aria-label="Professional statistics and achievements"
 		>
-			<StatItem value={12} label1="Years of" label2="Experience" />
-			<StatItem value={46} label1="Projects" label2="Completed" />
-			<StatItem value={20} label1="Worldwide" label2="Clients" />
+			<StatItem
+				value={stadistics.experience}
+				label1="Years of"
+				label2="Experience"
+			/>
+			<StatItem
+				value={stadistics.projects}
+				label1="Projects"
+				label2="Completed"
+			/>
+			<StatItem
+				value={stadistics.clients}
+				label1="Worldwide"
+				label2="Clients"
+			/>
 		</aside>
 	);
 }

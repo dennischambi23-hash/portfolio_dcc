@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import resume from "@/assets/resume.pdf";
+import resume from "@/assets/pdf/resume.pdf";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { FileDown, Mail } from "lucide-react";
 import { Button } from "@/components/atoms/Button";
+import { profile } from "@/constants/profile";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
@@ -49,13 +50,13 @@ export function Resume() {
 	const handleDownload = () => {
 		const link = document.createElement("a");
 		link.href = resume;
-		link.download = "resume.pdf";
+		link.download = `${profile.name.replace(" ", "-")}-resume.pdf`;
 		document.body.appendChild(link);
 		link.click();
 		document.body.removeChild(link);
 	};
 	const handleContact = () => {
-		const recipient = encodeURIComponent("reynaldoqs@gmail.com");
+		const recipient = encodeURIComponent(profile.links.email);
 		const emailSubject = encodeURIComponent("I'd like to connect with you");
 
 		const url = `https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${emailSubject}`;
@@ -63,8 +64,8 @@ export function Resume() {
 	};
 
 	return (
-		<div className="w-full h-full flex flex-col py-6">
-			<div className="flex items-center justify-between mb-6 px-6">
+		<div className="w-full h-full flex flex-col ">
+			<div className="flex items-center justify-between py-6 px-6">
 				<h4 className="text-md text-gray-300 font-mono">
 					Reynaldo Quispe | FullStack Developer | Resume
 				</h4>

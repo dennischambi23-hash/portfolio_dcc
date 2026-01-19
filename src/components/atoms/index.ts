@@ -1,4 +1,5 @@
 export * from "./Button";
+export * from "./badge";
 export * from "./GlassContainer";
 export * from "./Logo";
 export * from "./PageHeader";

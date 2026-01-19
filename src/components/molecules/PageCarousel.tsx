@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/suspicious/useIterableCallbackReturn: its library*/
+/** biome-ignore-all lint/style/noNonNullAssertion: library */
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: library */
 /** biome-ignore-all lint/suspicious/noExplicitAny: <library> */
 /** biome-ignore-all lint/a11y/useKeyWithClickEvents: its library*/
@@ -295,6 +296,29 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 		}
 	}, [expandedIndex]);
 
+	// Shared close handler
+	const handleClose = () => {
+		const expandedEl = document.querySelector(".page-content-expanded");
+		if (expandedEl) {
+			flipState.current = Flip.getState(expandedEl);
+		}
+		setExpandedIndex(null);
+	};
+
+	// Global Escape Key Listener
+	useEffect(() => {
+		if (expandedIndex === null) return;
+
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				handleClose();
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [expandedIndex]);
+
 	// Flip Animation Effect
 	React.useLayoutEffect(() => {
 		if (!flipState.current) return;
@@ -405,29 +429,11 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 					<div
 						className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
 						onClick={() => {
-							// Capture the EXPANDED card state before closing
-							const expandedEl = document.querySelector(
-								".page-content-expanded",
-							);
-							if (expandedEl) {
-								flipState.current = Flip.getState(expandedEl);
-							}
-							setExpandedIndex(null);
+							handleClose();
 						}}
 						role="dialog"
 						aria-modal="true"
 						aria-labelledby={`page-title-${expandedIndex}`}
-						onKeyDown={(e) => {
-							if (e.key === "Escape") {
-								const expandedEl = document.querySelector(
-									".page-content-expanded",
-								);
-								if (expandedEl) {
-									flipState.current = Flip.getState(expandedEl);
-								}
-								setExpandedIndex(null);
-							}
-						}}
 					>
 						<div
 							className="relative w-[calc(100vw-80px)] h-[calc(100vh-80px)] overflow-hidden dark" // Container for the expanded card
@@ -447,11 +453,12 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 										), // Helper class for Flip targets selector
 										style: { width: "100%", height: "100%" },
 										expanded: true,
+										onClose: handleClose,
 									},
 								)}
 						</div>
 					</div>,
-					document.body,
+					document.getElementById("modal-root")!,
 				)}
 		</>
 	);
@@ -460,6 +467,7 @@ export const PageCarousel: React.FC<PageCarouselProps> = ({
 export interface PageContentProps extends React.HTMLAttributes<HTMLDivElement> {
 	title: string;
 	expanded?: boolean;
+	onClose?: () => void;
 	preview: React.ReactNode;
 	children: React.ReactNode;
 }
@@ -470,6 +478,7 @@ export function PageContent({
 	title,
 	preview,
 	children,
+	onClose,
 	...rest
 }: PageContentProps) {
 	return (
@@ -483,7 +492,7 @@ export function PageContent({
 			aria-label={title}
 			id={rest.id || `page-content-${title.toLowerCase().replace(/\s+/g, "-")}`}
 		>
-			<PageHeader title={title} expanded={expanded} />
+			<PageHeader title={title} expanded={expanded} onClose={onClose} />
 			<div aria-hidden={!expanded} className="w-full h-full">
 				{expanded ? children : preview}
 			</div>

@@ -1,98 +1,100 @@
-import { CalendarSearch, Github, Linkedin, Mail } from "lucide-react";
+import { CalendarSearch, Github, Linkedin, Mail, Terminal } from "lucide-react";
 import { Button, TextType } from "@/components/atoms";
+import { profile } from "@/constants/profile";
 import { cn } from "@/lib/utils";
-import { SkillsPreview } from "../organisms/Skills";
 
-const summary = [
-	"UX-focused full stack and mobile developer with 7+ years of experience building user-friendly products for web and mobile.",
-	"Background in graphic design and backend development, helping me connect design ideas with solid engineering.",
-	"I enjoy turning UX principles into clean, accessible, and scalable interfaces.",
-	"I focus on intuitive UI systems with consistent design, usability, and pixel-perfect details.",
-];
 type HeroSectionProps = {
 	className?: string;
 };
+
 export function HeroSection({ className }: HeroSectionProps) {
+	const handleEmailClick = () => {
+		window.location.href = profile.links.email;
+	};
+
+	const handleLinkedInClick = () => {
+		window.open(profile.links.linkedin, "_blank");
+	};
+
+	const handleGithubClick = () => {
+		window.open(profile.links.github, "_blank");
+	};
+
+	const handleConsultationClick = () => {
+		window.open(profile.links.calendly, "_blank");
+	};
+
 	return (
 		<header
 			className={cn(
 				"flex flex-col h-full justify-center items-center font-inter",
 				className,
 			)}
-			itemScope
-			itemType="https://schema.org/Person"
 		>
 			<img
 				src="https://res.cloudinary.com/dtunq8gr3/image/upload/t_aayushfinal/aayush1_tgrcxs"
-				alt="Reynaldo Quispe - Software Engineer and Full Stack Developer"
-				className="size-[280px] rounded-full object-cover"
-				itemProp="image"
+				alt={`${profile.name} - Software Engineer and Full Stack Developer`}
+				className="w-48 h-48 md:w-[280px] md:h-[280px] rounded-full object-cover shadow-xl mb-4"
 				loading="eager"
 				width={280}
 				height={280}
 			/>
-			<h1 className="text-3xl text-gray-50 mt-2 font-bold" itemProp="name">
-				Hi, I'm <span itemProp="givenName">Reynaldo</span>{" "}
-				<span itemProp="familyName">Quispe</span>
+			<h1 className="text-3xl md:text-4xl text-gray-50 mt-2 font-bold text-center">
+				Hi, I'm {profile.name}
 			</h1>
 
-			<p className="text-2xl text-gray-400 mt-1 font-mono" itemProp="jobTitle">
-				Software Engineer
-			</p>
+			<div className="flex items-center gap-2 mt-2 text-gray-400">
+				<Terminal size={20} className="text-primary" />
+				<h2 className="text-xl md:text-2xl font-mono">{profile.title}</h2>
+			</div>
+
 			<nav
-				className="flex gap-3 mt-3"
+				className="flex gap-3 mt-4"
 				aria-label="Social media and contact links"
 			>
 				<Button
 					variant="outline"
 					size="icon"
-					aria-label="Send email to Reynaldo Quispe"
-					onClick={() =>
-						(window.location.href = "mailto:your-email@example.com")
-					}
+					aria-label="Send email to {profile.name}"
+					onClick={handleEmailClick}
 				>
-					<Mail />
+					<Mail className="size-5" />
 				</Button>
 				<Button
 					variant="outline"
 					size="icon"
-					aria-label="Visit Reynaldo Quispe's LinkedIn profile"
-					onClick={() =>
-						window.open("https://linkedin.com/in/yourprofile", "_blank")
-					}
+					aria-label="Visit {profile.name}'s LinkedIn profile"
+					onClick={handleLinkedInClick}
+					data-seo="linkedin-social-link"
 				>
-					<Linkedin />
+					<Linkedin className="size-5" />
 				</Button>
 				<Button
 					variant="outline"
 					size="icon"
-					aria-label="Visit Reynaldo Quispe's GitHub profile"
-					onClick={() =>
-						window.open("https://github.com/yourprofile", "_blank")
-					}
+					aria-label="Visit {profile.name}'s GitHub profile"
+					onClick={handleGithubClick}
 				>
-					<Github />
+					<Github className="size-5" />
 				</Button>
 				<Button
 					variant="outline"
 					size="icon"
-					aria-label="Schedule a meeting with Reynaldo Quispe"
-					onClick={() =>
-						window.open("https://calendly.com/yourprofile", "_blank")
-					}
+					aria-label="Schedule a meeting with {profile.name}"
+					onClick={handleConsultationClick}
 				>
-					<CalendarSearch />
+					<CalendarSearch className="size-5" />
 				</Button>
 			</nav>
 
-			<div className="relative mt-4 min-w-lg">
+			<div className="relative mt-6 w-full max-w-lg px-4 h-24">
 				<TextType
-					text={summary}
-					typingSpeed={75}
-					pauseDuration={1500}
+					text={profile.summary}
+					typingSpeed={50}
+					pauseDuration={2000}
 					showCursor={true}
 					cursorCharacter="|"
-					className="absolute max-w-lg text-gray-300 font-thin font-montserrat text-center"
+					className="absolute w-full text-gray-300 font-thin font-montserrat text-center text-sm md:text-base leading-relaxed"
 					aria-label="Professional summary"
 				/>
 			</div>

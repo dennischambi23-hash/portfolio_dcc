@@ -6,13 +6,11 @@ interface LogoProps extends HTMLAttributes<HTMLDivElement> {
 	name: string;
 	experience?: number;
 	contrast?: boolean;
-	custom?: boolean;
 }
 export function Logo({
 	name,
 	experience = 1,
 	contrast,
-	custom,
 	className,
 	...rest
 }: LogoProps) {
@@ -22,7 +20,7 @@ export function Logo({
 		.map((n) => n[0])
 		.join("");
 	const normalizedName = name.replace(" ", "").toLocaleLowerCase();
-	const showCustom = custom || imageError;
+	const showCustom = imageError;
 
 	return (
 		<GlassContainer
@@ -40,7 +38,7 @@ export function Logo({
 					onError={() => setImageError(true)}
 				/>
 			) : (
-				<div className="size-[50px] bg-gray-300 rounded-lg p-1 font-bold text-xl">
+				<div className="size-[50px] bg-gray-300 rounded-lg p-1 font-bold text-xl text-black">
 					{nameInitials}
 				</div>
 			)}

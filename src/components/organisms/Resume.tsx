@@ -65,8 +65,8 @@ export function Resume() {
 
 	return (
 		<div className="w-full h-full flex flex-col ">
-			<div className="flex flex-col md:flex-row gap-2 md:gap-0 items-center py-6 px-6">
-				<h4 className="text-md text-gray-300 font-mono">
+			<div className="flex flex-col md:flex-row gap-4 md:gap-0 items-center py-6 px-4 md:px-6">
+				<h4 className="text-base text-gray-300 font-mono text-center md:text-left">
 					Reynaldo Quispe | FullStack Developer | Resume
 				</h4>
 				{numPages && (
@@ -74,22 +74,22 @@ export function Resume() {
 						{numPages} {numPages === 1 ? "page" : "pages"}
 					</p>
 				)}
-				<div className="flex gap-3 justify-center md:ml-auto ">
+				<div className="flex gap-3 justify-center md:ml-auto w-full md:w-auto">
 					<Button
 						onClick={handleDownload}
 						variant="outline"
 						aria-label="Send email to Reynaldo Quispe"
-						className="text-gray-300 border-gray-300"
+						className="text-gray-300 border-gray-300 flex-1 md:flex-none"
 					>
-						Download <FileDown />
+						Download <FileDown className="ml-2 size-4" />
 					</Button>
 					<Button
-						className="text-gray-300 border-gray-300"
+						className="text-gray-300 border-gray-300 flex-1 md:flex-none"
 						variant="outline"
 						onClick={handleContact}
 					>
 						Contact me
-						<Mail />
+						<Mail className="ml-2 size-4" />
 					</Button>
 				</div>
 			</div>
